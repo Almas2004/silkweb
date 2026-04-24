@@ -1,0 +1,10 @@
+node_modules/
+backend/data/cases.json
+uploads/
+server.log
+server.err.log
+server-3001.log
+server-3001.err.log
+.env
+.env.*
+

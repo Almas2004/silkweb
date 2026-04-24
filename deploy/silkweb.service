@@ -1,0 +1,17 @@
+[Unit]
+Description=Silk Web site
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/var/www/silkweb
+Environment=PORT=8090
+Environment=ADMIN_API_KEY=silkweb-admin-key
+EnvironmentFile=-/etc/silkweb/silkweb.env
+ExecStart=/usr/bin/node backend/server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
