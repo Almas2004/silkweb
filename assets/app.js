@@ -3,21 +3,33 @@ const seedCases = [
     id: "seed-1",
     title: "Корпоративный сайт для производственной компании",
     category: "Website",
+    metric: "+41% заявок",
     description: "Пересобрали структуру сайта, усилили офферы, добавили формы захвата и SEO-архитектуру для роста входящих обращений.",
+    challenge: "Компаниям было сложно быстро понять, чем именно занимается бизнес и как оставить заявку без лишних шагов.",
+    solution: "Перестроили структуру, вывели ключевые направления на первый экран, усилили офферы и добавили понятные точки входа для обращения.",
+    outcome: "Сайт стал рабочим инструментом продаж: менеджеры начали получать более понятные обращения, а входящий поток стал стабильнее.",
     image: ""
   },
   {
     id: "seed-2",
     title: "CRM для отдела продаж",
     category: "CRM",
+    metric: "-28% потерь лидов",
     description: "Настроили стадии сделок, контроль менеджеров, учёт задач и удобную обработку заявок из digital-каналов.",
+    challenge: "Лиды терялись между менеджерами, этапы воронки вели вручную, а по задачам и статусам не было единой картины.",
+    solution: "Собрали прозрачную воронку, распределили зоны ответственности, привязали задачи к этапам и упорядочили входящие заявки.",
+    outcome: "Команда получила контроль над процессом продаж, меньше ручной путаницы и более понятную работу с каждым обращением.",
     image: ""
   },
   {
     id: "seed-3",
     title: "Telegram-бот для первичной квалификации",
     category: "Telegram Bot",
+    metric: "24/7 обработка",
     description: "Автоматизировали ответы, сбор контактов и передачу лида в продажу без потери скорости реакции.",
+    challenge: "Компания теряла часть тёплых лидов вне рабочего времени и тратила ресурс менеджеров на однотипные первые ответы.",
+    solution: "Бот взял на себя первичный контакт, сбор базовых данных и быструю передачу запроса менеджеру.",
+    outcome: "Скорость реакции выросла, а заинтересованных пользователей стало проще доводить до живого диалога с отделом продаж.",
     image: ""
   }
 ];
@@ -35,6 +47,38 @@ function getApiBaseUrl() {
 
 function getApiUrl(pathname) {
   return `${getApiBaseUrl()}${pathname}`;
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function toSafeText(value) {
+  return String(value || "").trim();
+}
+
+function formatMultilineText(value) {
+  return escapeHtml(value).replace(/\n/g, "<br>");
+}
+
+function normalizeCase(item) {
+  const description = toSafeText(item.description);
+  const details = toSafeText(item.details);
+  const resultFallback = toSafeText(item.result);
+
+  return {
+    ...item,
+    metric: toSafeText(item.metric || resultFallback),
+    description,
+    challenge: toSafeText(item.challenge || description),
+    solution: toSafeText(item.solution || details || description),
+    outcome: toSafeText(item.outcome || resultFallback || details || description)
+  };
 }
 
 async function apiRequest(pathname, options = {}) {
@@ -69,10 +113,12 @@ async function fetchCases() {
     if (!response.ok) {
       throw new Error("Cases request failed");
     }
+
     const data = await response.json();
-    casesCache = Array.isArray(data.cases) && data.cases.length ? data.cases : [...seedCases];
+    const items = Array.isArray(data.cases) && data.cases.length ? data.cases : [...seedCases];
+    casesCache = items.map(normalizeCase);
   } catch {
-    casesCache = [...seedCases];
+    casesCache = [...seedCases].map(normalizeCase);
   }
 
   return casesCache;
@@ -90,12 +136,46 @@ function readFileAsDataUrl(file) {
 function renderCaseCards(items) {
   return items.map((item) => `
     <article class="case-card reveal visible">
-      <div class="case-cover" style="${item.image ? `background-image: linear-gradient(135deg, rgba(15,163,199,0.16), rgba(63,136,255,0.14)), url('${item.image}')` : ""}"></div>
-      <div class="case-meta">
-        <span>${item.category}</span>
+      <div class="case-cover" style="${item.image ? `background-image: linear-gradient(135deg, rgba(15,163,199,0.16), rgba(63,136,255,0.14)), url('${escapeHtml(item.image)}')` : ""}"></div>
+      <div class="case-card-top">
+        <div class="case-meta">
+          <span>${escapeHtml(item.category)}</span>
+        </div>
+        ${item.metric ? `<div class="case-metric">${escapeHtml(item.metric)}</div>` : ""}
       </div>
-      <h3>${item.title}</h3>
-      <p>${item.description}</p>
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${escapeHtml(item.description)}</p>
+      <button class="button button-secondary case-more" type="button" data-case-open="${escapeHtml(item.id)}">Подробнее</button>
+    </article>
+  `).join("");
+}
+
+function renderFeaturedCases(items) {
+  return items.map((item) => `
+    <article class="featured-case reveal visible">
+      <div class="featured-case-visual" style="${item.image ? `background-image: linear-gradient(135deg, rgba(15,163,199,0.16), rgba(63,136,255,0.14)), url('${escapeHtml(item.image)}')` : ""}"></div>
+      <div class="featured-case-body">
+        <div class="featured-case-top">
+          <div class="case-meta"><span>${escapeHtml(item.category)}</span></div>
+          ${item.metric ? `<div class="case-metric">${escapeHtml(item.metric)}</div>` : ""}
+        </div>
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml(item.description)}</p>
+        <div class="featured-case-snippets">
+          <article>
+            <strong>Задача</strong>
+            <span>${escapeHtml(item.challenge)}</span>
+          </article>
+          <article>
+            <strong>Результат</strong>
+            <span>${escapeHtml(item.outcome)}</span>
+          </article>
+        </div>
+        <div class="featured-case-actions">
+          <button class="button button-primary" type="button" data-case-open="${escapeHtml(item.id)}">Подробнее</button>
+          <a class="button button-secondary" href="#lead-form" data-service="${escapeHtml(item.category)}">Хочу похожий результат</a>
+        </div>
+      </div>
     </article>
   `).join("");
 }
@@ -106,6 +186,13 @@ function renderCases(selector, limit = null) {
 
   const items = limit ? casesCache.slice(0, limit) : casesCache;
   container.innerHTML = renderCaseCards(items);
+}
+
+function renderFeatured(selector, limit = 2) {
+  const container = document.querySelector(selector);
+  if (!container) return;
+
+  container.innerHTML = renderFeaturedCases(casesCache.slice(0, limit));
 }
 
 function setActiveNav() {
@@ -133,12 +220,30 @@ function setupReveal() {
 function setupMenu() {
   const toggle = document.querySelector(".menu-toggle");
   const nav = document.querySelector(".site-nav");
-  if (!toggle || !nav) return;
+  const actions = document.querySelector(".header-actions");
+  if (!toggle || !nav || !actions) return;
 
   toggle.addEventListener("click", () => {
     const expanded = toggle.getAttribute("aria-expanded") === "true";
     toggle.setAttribute("aria-expanded", String(!expanded));
+    actions.classList.toggle("open");
     nav.classList.toggle("open");
+  });
+}
+
+function setServiceValue(service) {
+  if (!service) return;
+
+  document.querySelectorAll(".js-lead-form input[name='service']").forEach((input) => {
+    input.value = service;
+  });
+}
+
+function setupServicePrefill() {
+  document.addEventListener("click", (event) => {
+    const trigger = event.target.closest("[data-service]");
+    if (!trigger) return;
+    setServiceValue(trigger.dataset.service);
   });
 }
 
@@ -218,6 +323,62 @@ function setupLeadForms() {
   });
 }
 
+function setupCaseModal() {
+  const modal = document.querySelector(".case-modal");
+  if (!modal) return;
+
+  const modalImage = modal.querySelector(".js-case-modal-image");
+  const modalCategory = modal.querySelector(".js-case-modal-category");
+  const modalMetric = modal.querySelector(".js-case-modal-metric");
+  const modalTitle = modal.querySelector(".js-case-modal-title");
+  const modalDescription = modal.querySelector(".js-case-modal-description");
+  const modalChallenge = modal.querySelector(".js-case-modal-challenge");
+  const modalSolution = modal.querySelector(".js-case-modal-solution");
+  const modalOutcome = modal.querySelector(".js-case-modal-outcome");
+
+  const closeModal = () => {
+    modal.hidden = true;
+    document.body.classList.remove("modal-open");
+  };
+
+  const openModal = (caseId) => {
+    const item = casesCache.find((entry) => entry.id === caseId);
+    if (!item) return;
+
+    modalImage.style.backgroundImage = item.image
+      ? `linear-gradient(135deg, rgba(15,163,199,0.16), rgba(63,136,255,0.14)), url('${item.image.replace(/'/g, "\\'")}')`
+      : "";
+    modalCategory.innerHTML = `<span>${escapeHtml(item.category)}</span>`;
+    modalMetric.textContent = item.metric || "";
+    modalMetric.hidden = !item.metric;
+    modalTitle.textContent = item.title;
+    modalDescription.textContent = item.description;
+    modalChallenge.innerHTML = formatMultilineText(item.challenge);
+    modalSolution.innerHTML = formatMultilineText(item.solution);
+    modalOutcome.innerHTML = formatMultilineText(item.outcome);
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+  };
+
+  document.addEventListener("click", (event) => {
+    const trigger = event.target.closest("[data-case-open]");
+    if (trigger) {
+      openModal(trigger.dataset.caseOpen);
+      return;
+    }
+
+    if (event.target.closest("[data-case-close]")) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) {
+      closeModal();
+    }
+  });
+}
+
 function setupAdmin() {
   const form = document.querySelector(".js-case-form");
   const list = document.querySelector(".js-admin-cases");
@@ -228,14 +389,20 @@ function setupAdmin() {
   const draw = () => {
     list.innerHTML = casesCache.map((item) => `
       <article class="admin-case">
-        <div class="case-meta">
-          <span>${item.category}</span>
+        <div class="case-card-top">
+          <div class="case-meta"><span>${escapeHtml(item.category)}</span></div>
+          ${item.metric ? `<div class="case-metric">${escapeHtml(item.metric)}</div>` : ""}
         </div>
-        <h3>${item.title}</h3>
-        <p>${item.description}</p>
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml(item.description)}</p>
+        <div class="admin-case-details">
+          <strong>Задача:</strong> ${formatMultilineText(item.challenge)}<br>
+          <strong>Что сделали:</strong> ${formatMultilineText(item.solution)}<br>
+          <strong>Результат:</strong> ${formatMultilineText(item.outcome)}
+        </div>
         <div class="admin-case-actions">
-          <button class="button button-secondary" type="button" data-edit="${item.id}">Редактировать</button>
-          <button class="button button-secondary" type="button" data-delete="${item.id}">Удалить</button>
+          <button class="button button-secondary" type="button" data-edit="${escapeHtml(item.id)}">Редактировать</button>
+          <button class="button button-secondary" type="button" data-delete="${escapeHtml(item.id)}">Удалить</button>
         </div>
       </article>
     `).join("");
@@ -263,7 +430,11 @@ function setupAdmin() {
       const requestPayload = {
         title: payload.title,
         category: payload.category,
+        metric: payload.metric,
         description: payload.description,
+        challenge: payload.challenge,
+        solution: payload.solution,
+        outcome: payload.outcome,
         image: imageValue
       };
 
@@ -281,8 +452,8 @@ function setupAdmin() {
 
       await fetchCases();
       draw();
-      renderCases(".js-cases-preview", 3);
       renderCases(".js-cases-grid");
+      renderFeatured(".js-featured-cases");
       resetForm();
       if (status) status.textContent = "Кейс сохранён.";
     } catch (error) {
@@ -291,8 +462,10 @@ function setupAdmin() {
   });
 
   list.addEventListener("click", async (event) => {
-    const editId = event.target.dataset.edit;
-    const deleteId = event.target.dataset.delete;
+    const editTrigger = event.target.closest("[data-edit]");
+    const deleteTrigger = event.target.closest("[data-delete]");
+    const editId = editTrigger?.dataset.edit;
+    const deleteId = deleteTrigger?.dataset.delete;
 
     if (editId) {
       const item = casesCache.find((entry) => entry.id === editId);
@@ -300,8 +473,12 @@ function setupAdmin() {
       form.elements.id.value = item.id;
       form.elements.title.value = item.title;
       form.elements.category.value = item.category;
+      form.elements.metric.value = item.metric || "";
       form.elements.image.value = item.image;
       form.elements.description.value = item.description;
+      form.elements.challenge.value = item.challenge || "";
+      form.elements.solution.value = item.solution || "";
+      form.elements.outcome.value = item.outcome || "";
       if (status) status.textContent = "Режим редактирования кейса.";
     }
 
@@ -312,8 +489,8 @@ function setupAdmin() {
         });
         await fetchCases();
         draw();
-        renderCases(".js-cases-preview", 3);
         renderCases(".js-cases-grid");
+        renderFeatured(".js-featured-cases");
         resetForm();
         if (status) status.textContent = "Кейс удалён.";
       } catch (error) {
@@ -330,10 +507,12 @@ async function init() {
   setActiveNav();
   setupReveal();
   setupMenu();
+  setupServicePrefill();
   setupLeadForms();
   await fetchCases();
-  renderCases(".js-cases-preview", 3);
   renderCases(".js-cases-grid");
+  renderFeatured(".js-featured-cases");
+  setupCaseModal();
   setupAdmin();
 }
 

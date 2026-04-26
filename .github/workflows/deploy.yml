@@ -4,26 +4,43 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: silkweb-production
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Copy project to server
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate backend syntax
+        run: node --check backend/server.js
+
+      - name: Validate frontend syntax
+        run: node --check assets/app.js
+
+      - name: Upload project to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
-          source: "admin.html,assets,backend,cases.html,deploy,index.html,package.json,robots.txt,services.html,sitemap.xml,README.md,.gitignore"
+          source: "admin.html,assets,backend,cases.html,deploy,index.html,package.json,README.md,robots.txt,services.html,sitemap.xml"
           target: "/var/www/silkweb"
           overwrite: true
 
-      - name: Deploy over SSH
+      - name: Restart application
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -31,12 +48,13 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           script: |
-            sudo mkdir -p /var/www/silkweb
+            set -e
+            sudo mkdir -p /var/www/silkweb /etc/silkweb
             sudo chown -R $USER:$USER /var/www/silkweb
-            sudo mkdir -p /etc/silkweb
             cat <<EOF | sudo tee /etc/silkweb/silkweb.env > /dev/null
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}
+            ADMIN_API_KEY=${{ secrets.ADMIN_API_KEY }}
             EOF
             cd /var/www/silkweb
             mkdir -p backend/data uploads
@@ -44,3 +62,4 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl enable silkweb.service
             sudo systemctl restart silkweb.service
+            curl -fsS http://127.0.0.1:8090 > /dev/null

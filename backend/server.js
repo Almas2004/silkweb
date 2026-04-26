@@ -1,5 +1,4 @@
 const http = require("http");
-const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
 const crypto = require("crypto");
@@ -19,7 +18,11 @@ const seedCases = [
     id: "seed-1",
     title: "Корпоративный сайт для производственной компании",
     category: "Website",
+    metric: "+41% заявок",
     description: "Пересобрали структуру сайта, усилили офферы, добавили формы захвата и SEO-архитектуру для роста входящих обращений.",
+    challenge: "Компаниям было сложно быстро понять, чем именно занимается бизнес и как оставить заявку без лишних шагов.",
+    solution: "Перестроили структуру, вывели ключевые направления на первый экран, усилили офферы и добавили понятные точки входа для обращения.",
+    outcome: "Сайт стал рабочим инструментом продаж: менеджеры начали получать более понятные обращения, а входящий поток стал стабильнее.",
     image: "",
     createdAt: new Date().toISOString()
   },
@@ -27,7 +30,11 @@ const seedCases = [
     id: "seed-2",
     title: "CRM для отдела продаж",
     category: "CRM",
+    metric: "-28% потерь лидов",
     description: "Настроили стадии сделок, контроль менеджеров, учёт задач и удобную обработку заявок из digital-каналов.",
+    challenge: "Лиды терялись между менеджерами, этапы воронки вели вручную, а по задачам и статусам не было единой картины.",
+    solution: "Собрали прозрачную воронку, распределили зоны ответственности, привязали задачи к этапам и упорядочили входящие заявки.",
+    outcome: "Команда получила контроль над процессом продаж, меньше ручной путаницы и более понятную работу с каждым обращением.",
     image: "",
     createdAt: new Date().toISOString()
   },
@@ -35,7 +42,11 @@ const seedCases = [
     id: "seed-3",
     title: "Telegram-бот для первичной квалификации",
     category: "Telegram Bot",
+    metric: "24/7 обработка",
     description: "Автоматизировали ответы, сбор контактов и передачу лида в продажу без потери скорости реакции.",
+    challenge: "Компания теряла часть тёплых лидов вне рабочего времени и тратила ресурс менеджеров на однотипные первые ответы.",
+    solution: "Бот взял на себя первичный контакт, сбор базовых данных и быструю передачу запроса менеджеру.",
+    outcome: "Скорость реакции выросла, а заинтересованных пользователей стало проще доводить до живого диалога с отделом продаж.",
     image: "",
     createdAt: new Date().toISOString()
   }
@@ -44,6 +55,7 @@ const seedCases = [
 async function ensureStorage() {
   await fsp.mkdir(DATA_DIR, { recursive: true });
   await fsp.mkdir(UPLOADS_DIR, { recursive: true });
+
   try {
     await fsp.access(CASES_FILE);
   } catch {
@@ -51,13 +63,29 @@ async function ensureStorage() {
   }
 }
 
+function normalizeCaseRecord(item) {
+  const description = String(item.description || "").trim();
+  const details = String(item.details || "").trim();
+  const legacyResult = String(item.result || "").trim();
+
+  return {
+    ...item,
+    metric: String(item.metric || legacyResult || "").trim(),
+    description,
+    challenge: String(item.challenge || description).trim(),
+    solution: String(item.solution || details || description).trim(),
+    outcome: String(item.outcome || legacyResult || details || description).trim()
+  };
+}
+
 async function readCases() {
   try {
     const raw = await fsp.readFile(CASES_FILE, "utf8");
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : seedCases;
+    const items = Array.isArray(parsed) && parsed.length ? parsed : seedCases;
+    return items.map(normalizeCaseRecord);
   } catch {
-    return seedCases;
+    return seedCases.map(normalizeCaseRecord);
   }
 }
 
@@ -138,12 +166,14 @@ function getContentType(filePath) {
     ".gif": "image/gif",
     ".ico": "image/x-icon"
   };
+
   return map[ext] || "application/octet-stream";
 }
 
 function parseRequestBody(req) {
   return new Promise((resolve, reject) => {
     let data = "";
+
     req.on("data", (chunk) => {
       data += chunk;
       if (data.length > 10 * 1024 * 1024) {
@@ -151,27 +181,35 @@ function parseRequestBody(req) {
         req.destroy();
       }
     });
+
     req.on("end", () => {
       if (!data) {
         resolve({});
         return;
       }
+
       try {
         resolve(JSON.parse(data));
       } catch {
         reject(new Error("Invalid JSON body"));
       }
     });
+
     req.on("error", reject);
   });
 }
 
 function sanitizeCase(input) {
+  const description = String(input.description || "").trim();
   return {
     id: input.id || crypto.randomUUID(),
     title: String(input.title || "").trim(),
     category: String(input.category || "").trim(),
-    description: String(input.description || "").trim(),
+    metric: String(input.metric || "").trim(),
+    description,
+    challenge: String(input.challenge || description).trim(),
+    solution: String(input.solution || description).trim(),
+    outcome: String(input.outcome || description).trim(),
     image: String(input.image || "").trim(),
     createdAt: input.createdAt || new Date().toISOString()
   };
@@ -181,6 +219,7 @@ function validateCasePayload(input) {
   if (!input.title || !input.category || !input.description) {
     return "Заполните название, категорию и описание кейса.";
   }
+
   return null;
 }
 
@@ -203,6 +242,7 @@ async function storeImageFromDataUrl(imageValue) {
   const extension = extensionMap[mimeType] || ".png";
   const fileName = `${Date.now()}-${crypto.randomUUID()}${extension}`;
   const targetPath = path.join(UPLOADS_DIR, fileName);
+
   await fsp.writeFile(targetPath, Buffer.from(base64Data, "base64"));
   return `/uploads/${fileName}`;
 }
@@ -257,6 +297,7 @@ async function handleApi(req, res, url) {
   }
 
   const caseIdMatch = url.pathname.match(/^\/api\/cases\/([^/]+)$/);
+
   if (caseIdMatch && req.method === "PUT") {
     const caseId = decodeURIComponent(caseIdMatch[1]);
     const payload = await parseRequestBody(req);

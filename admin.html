@@ -15,37 +15,51 @@
     <header class="site-header">
       <a class="brand" href="index.html"><span class="brand-mark"></span><span>Silk Web</span></a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Открыть меню"><span></span><span></span></button>
-      <nav class="site-nav">
-        <a href="index.html" data-nav="home">Главная</a>
-        <a href="services.html" data-nav="services">Услуги</a>
-        <a href="cases.html" data-nav="cases">Кейсы</a>
-        <a href="index.html#lead-form">Контакты</a>
-      </nav>
+      <div class="header-actions">
+        <nav class="site-nav">
+          <a href="index.html" data-nav="home">Главная</a>
+          <a href="services.html" data-nav="services">Услуги</a>
+          <a href="cases.html" data-nav="cases">Кейсы</a>
+          <a href="index.html#lead-form">Контакты</a>
+        </nav>
+        <a class="button button-primary header-cta" href="index.html#lead-form">Оставить заявку</a>
+      </div>
     </header>
     <main>
       <section class="page-hero reveal">
         <p class="eyebrow">Admin panel</p>
         <h1>Управление кейсами через backend API</h1>
-        <p>Кейсы теперь хранятся на сервере, а публичные страницы получают данные через лёгкий API без влияния на скорость загрузки интерфейса.</p>
+        <p>Кейсы хранятся на сервере, а публичные страницы получают данные через лёгкий API без влияния на скорость загрузки интерфейса.</p>
       </section>
 
       <section class="section admin-layout">
+        <div class="section-head reveal">
+          <p class="eyebrow">Add case</p>
+          <h2>Добавить кейс</h2>
+          <p>Короткое описание показывается в карточке, а в подробностях кейса отдельно выводятся задача, решение, результат и ключевая цифра.</p>
+        </div>
         <form class="admin-form reveal js-case-form">
           <input type="hidden" name="id">
           <label><span>Название кейса</span><input type="text" name="title" required></label>
           <label><span>Категория</span><input type="text" name="category" placeholder="Website / CRM / Telegram Bot" required></label>
+          <label><span>Ключевая цифра</span><input type="text" name="metric" placeholder="+41% заявок"></label>
           <label><span>Ссылка на изображение</span><input type="url" name="image" placeholder="https://..."></label>
           <label><span>Или загрузите файл</span><input type="file" name="imageFile" accept="image/*"></label>
-          <label class="full-width"><span>Описание</span><textarea name="description" rows="5" required></textarea></label>
-          <button class="button button-primary" type="submit">Сохранить кейс</button>
-          <button class="button button-secondary js-reset-form" type="button">Очистить форму</button>
-          <p class="form-status js-admin-status" aria-live="polite"></p>
+          <label class="full-width"><span>Описание для карточки</span><textarea name="description" rows="4" required></textarea></label>
+          <label class="full-width"><span>Задача</span><textarea name="challenge" rows="4" placeholder="С какой проблемой пришёл клиент и что нужно было исправить."></textarea></label>
+          <label class="full-width"><span>Что сделали</span><textarea name="solution" rows="5" placeholder="Опишите подход, этапы работы, внедрения и ключевые решения."></textarea></label>
+          <label class="full-width"><span>Результат</span><textarea name="outcome" rows="4" placeholder="Какие изменения получил клиент: заявки, скорость, прозрачность, удобство."></textarea></label>
+          <div class="admin-form-actions full-width">
+            <button class="button button-primary" type="submit">Сохранить кейс</button>
+            <button class="button button-secondary js-reset-form" type="button">Очистить форму</button>
+          </div>
+          <p class="form-status js-admin-status full-width" aria-live="polite"></p>
         </form>
 
         <div class="admin-list reveal">
           <div class="section-head">
-            <p class="eyebrow">Stored cases</p>
-            <h2>Текущие кейсы</h2>
+            <p class="eyebrow">All cases</p>
+            <h2>Все кейсы</h2>
           </div>
           <div class="js-admin-cases"></div>
         </div>

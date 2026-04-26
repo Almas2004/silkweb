@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Кейсы Silk Web | Проекты и результаты</title>
-  <meta name="description" content="Кейсы Silk Web: сайты, CRM, Telegram-боты и маркетинговые решения для роста заявок и продаж.">
+  <title>Silk Web | Кейсы по разработке сайтов, CRM и digital-системам</title>
+  <meta name="description" content="Кейсы Silk Web: сайты, CRM, Telegram-боты и маркетинговые решения для роста заявок и продаж в Алматы, Астане и по Казахстану.">
+  <meta name="keywords" content="кейсы разработки сайтов, кейсы SEO, кейсы CRM, кейсы Telegram ботов, digital агентство Казахстан">
   <link rel="canonical" href="https://silkweb.kz/cases.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,12 +17,15 @@
     <header class="site-header">
       <a class="brand" href="index.html"><span class="brand-mark"></span><span>Silk Web</span></a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Открыть меню"><span></span><span></span></button>
-      <nav class="site-nav">
-        <a href="index.html" data-nav="home">Главная</a>
-        <a href="services.html" data-nav="services">Услуги</a>
-        <a href="cases.html" data-nav="cases">Кейсы</a>
-        <a href="#cases-lead-form">Контакты</a>
-      </nav>
+      <div class="header-actions">
+        <nav class="site-nav">
+          <a href="index.html" data-nav="home">Главная</a>
+          <a href="services.html" data-nav="services">Услуги</a>
+          <a href="cases.html" data-nav="cases">Кейсы</a>
+          <a href="#cases-lead-form">Контакты</a>
+        </nav>
+        <a class="button button-primary header-cta" href="#cases-lead-form">Оставить заявку</a>
+      </div>
     </header>
     <main>
       <section class="page-hero cases-hero">
@@ -29,6 +33,7 @@
           <p class="eyebrow">Cases</p>
           <h1>Кейсы, в которых видно, как digital-система превращается в результат</h1>
           <p>Здесь собраны проекты Silk Web: сайты, CRM, Telegram-боты и маркетинговые связки, которые помогают бизнесу получать больше заявок и контроля.</p>
+          <p class="cta-note">Показываем задачу, решение и результат, чтобы было видно, как проект работает в бизнесе, а не только выглядит на экране.</p>
         </div>
         <div class="cases-hero-panel reveal reveal-delay">
           <div class="case-highlight">
@@ -64,11 +69,34 @@
       <section class="section">
         <div class="cases-grid js-cases-grid"></div>
       </section>
+
+      <section class="section faq-section">
+        <div class="section-head reveal">
+          <p class="eyebrow">FAQ</p>
+          <h2>Что чаще всего хотят понять перед заказом сайта или digital-системы</h2>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item reveal">
+            <summary>Можно ли посмотреть кейсы по разработке сайтов для бизнеса в Казахстане?</summary>
+            <p>Да. На этой странице собраны кейсы по сайтам, CRM, Telegram-ботам и marketing-связкам. В каждом кейсе можно открыть подробности и посмотреть задачу, решение и результат.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Вы работаете только с дизайном или с заявками и продажами тоже?</summary>
+            <p>Основной фокус именно на заявках и продажах: мы смотрим на структуру, формы, обработку лидов, CRM, аналитику, SEO и рекламу как на одну систему роста.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Можно ли заказать сайт и потом подключить SEO или рекламу?</summary>
+            <p>Да. Часто мы стартуем с сайта и сразу закладываем техническую базу, чтобы потом без переделок подключить SEO, таргет или контекстную рекламу.</p>
+          </details>
+        </div>
+      </section>
+
       <section class="section lead-section" id="cases-lead-form">
         <div class="section-head reveal">
           <p class="eyebrow">Contacts</p>
           <h2>Хотите такой же результат для своего бизнеса?</h2>
           <p>Оставьте заявку, и мы предложим формат сайта, CRM, бота или рекламной связки под вашу задачу.</p>
+          <p class="lead-note">Бесплатно разберём задачу и покажем, какой формат проекта подойдёт именно под ваш бизнес и текущую точку роста.</p>
         </div>
         <form class="lead-form reveal js-lead-form">
           <label><span>Имя</span><input type="text" name="name" placeholder="Как к вам обращаться?" required></label>
@@ -101,6 +129,34 @@
       </div>
     </footer>
   </div>
+  <div class="case-modal" hidden>
+    <div class="case-modal-backdrop" data-case-close></div>
+    <div class="case-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="case-modal-title">
+      <button class="case-modal-close" type="button" aria-label="Закрыть" data-case-close>&times;</button>
+      <div class="case-modal-cover js-case-modal-image"></div>
+      <div class="case-modal-top">
+        <div class="case-modal-meta js-case-modal-category"></div>
+        <div class="case-modal-metric js-case-modal-metric"></div>
+      </div>
+      <h2 id="case-modal-title" class="js-case-modal-title"></h2>
+      <p class="case-modal-description js-case-modal-description"></p>
+      <div class="case-modal-sections">
+        <article class="case-modal-section">
+          <h3>Задача</h3>
+          <p class="js-case-modal-challenge"></p>
+        </article>
+        <article class="case-modal-section">
+          <h3>Что сделали</h3>
+          <p class="js-case-modal-solution"></p>
+        </article>
+        <article class="case-modal-section">
+          <h3>Результат</h3>
+          <p class="js-case-modal-outcome"></p>
+        </article>
+      </div>
+    </div>
+  </div>
+
   <script src="assets/config.js"></script>
   <script src="assets/app.js"></script>
 </body>
