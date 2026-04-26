@@ -62,4 +62,11 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl enable silkweb.service
             sudo systemctl restart silkweb.service
-            curl -fsS http://127.0.0.1:8090 > /dev/null
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -fsS http://127.0.0.1:8090 > /dev/null; then
+                exit 0
+              fi
+              sleep 3
+            done
+            sudo systemctl status silkweb.service --no-pager -l
+            exit 1
