@@ -123,6 +123,12 @@ select {
   gap: 16px;
 }
 
+.header-socials {
+  display: none;
+  gap: 12px;
+  align-items: center;
+}
+
 .site-nav a {
   color: var(--muted);
   transition: color 180ms ease;
@@ -1142,6 +1148,11 @@ body.modal-open {
     padding-top: 16px;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .header-socials {
+    display: flex;
+    justify-content: flex-start;
   }
 
   .header-actions .header-cta {
